@@ -1,49 +1,58 @@
-import { AlunoDAO } from '../dao/alunoDAO'
+import { Request, Response } from 'express';
+import { AlunoDAO } from '../DAO/alunoDAO.js';
 
-const alunoDAO = new AlunoDAO()
+const alunoDAO = new AlunoDAO();
 
 export class AlunoController {
-
-  async listar(req, res) {
-    const alunos = await alunoDAO.listarTodos()
-    res.json(alunos)
-  }
-
-  async buscar(req, res) {
-    const id = Number(req.params.id)
-
-    const aluno = await alunoDAO.buscarPorId(id)
-
-    if (!aluno) {
-      return res.status(404).json({
-        erro: 'aluno n encontrado'
-      })
+    async listar(req: Request, res: Response) {
+        try {
+            const alunos = await alunoDAO.listarTodos();
+            res.json(alunos);
+        } catch (error: any) {
+            res.status(500).json({ error: error.message });
+        }
     }
 
-    res.json(aluno)
-  }
+    async buscar(req: Request, res: Response) {
+        try {
+            const id = parseInt(req.params.id!);
+            const aluno = await alunoDAO.buscarPorId(id);
+            if (aluno) {
+                res.json(aluno);
+            } else {
+                res.status(404).json({ message: "Aluno não encontrado" });
+            }
+        } catch (error: any) {
+            res.status(500).json({ error: error.message });
+        }
+    }
 
-  async criar(req, res) {
-    const aluno = await alunoDAO.criar(req.body)
+    async criar(req: Request, res: Response) {
+        try {
+            const novoAluno = await alunoDAO.criar(req.body);
+            res.status(201).json(novoAluno);
+        } catch (error: any) {
+            res.status(400).json({ error: error.message });
+        }
+    }
 
-    res.status(201).json(aluno)
-  }
+    async atualizar(req: Request, res: Response) {
+        try {
+            const id = parseInt(req.params.id!);
+            const alunoAtualizado = await alunoDAO.atualizar(id, req.body);
+            res.json(alunoAtualizado);
+        } catch (error: any) {
+            res.status(400).json({ error: error.message });
+        }
+    }
 
-  async atualizar(req, res)  {
-    const id = Number(req.params.id)
-
-    const aluno = await alunoDAO.atualizar(id, req.body)
-
-    res.json(aluno)
-  }
-
-  async deletar(req, res) {
-    const id = Number(req.params.id)
-
-    await alunoDAO.deletar(id)
-
-    res.json({
-      mensagem: 'aluno deletado'
-    })
-  }
+    async deletar(req: Request, res: Response) {
+        try {
+            const id = parseInt(req.params.id!);
+            await alunoDAO.deletar(id);
+            res.status(204).send();
+        } catch (error: any) {
+            res.status(500).json({ error: error.message });
+        }
+    }
 }
